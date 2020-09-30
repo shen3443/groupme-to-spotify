@@ -5,7 +5,7 @@ Built using Groupy and Spotipy
 # Inputs
 When you run groupme_to_spotify.py you will be prompted to enter some information needed to access Groupme and Spotify, the following is a guide to help you navigate those requests.
 
-It is highly recommended that you use copy+paste to make sure you accurately represent the information. I also recommend using a file like my_inputs.txt to save the inputs you frequently use.
+It is highly recommended that you use copy+paste to make sure you accurately represent the information. I also recommend using a file like [my_inputs.txt](https://github.com/shen3443/groupme-to-spotify/blob/master/my_inputs.txt) to save the inputs you frequently use.
 
 #### gm_token
 Your GroupMe developer token. It can be aquired from https://dev.groupme.com/ 
