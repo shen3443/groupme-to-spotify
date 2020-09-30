@@ -1,28 +1,10 @@
-
-'''  
-    TO DO:
-        [X] Figure out user and playlist info
-        [X] Write GroupmeSpotifyPlaylistUpdate.add_songs_to_playlist()
-        [X] Write GroupmeSpotifyPlaylistUpdate.update_log()
-            or write a log decorator
-        [X] Add log updater to GroupmeSpotifyPlaylistUpdate.get_tracks_from_groupchat()
-        [X] Continue on __init__
-        [X] Write main()
-        [ ] Test
-        [ ] Playlist DNE functionality?
-        [X] Command line inputs?
-        [X] Annotate/Comment
-        [X] Clear personal data
-        [ ] Upload to GitHub
-'''
-
 from groupy.client import Client
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 class GroupmeSpotifyPlaylistUpdate:
     '''
-    Parses through Groupme Groupchat messages and finds links to Spotify
+    Parses through Groupme groupchat messages and finds links to Spotify
     songs, then adds those songs to a Spotify playlist
     '''
     def __init__(self, input_dict):
@@ -221,8 +203,8 @@ def main():
         'sp_playlist_id',
         'playlist_name'
     ]
-    print('***Please see ReadME file for explanation of required inputs & instructions on how to find them***')
-    print('ENTER README URL')
+    print('***Please see README file for explanation of required inputs & instructions on how to find them***')
+    print('https://github.com/shen3443/groupme-to-spotify/blob/master/README.md')
     GroupmeSpotifyPlaylistUpdate(get_inputs(required_inputs))
 
 if __name__ == "__main__":
