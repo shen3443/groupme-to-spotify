@@ -1,0 +1,10 @@
+gm_token            :   
+group_name          :   
+log_file            :   
+sp_client_id        :   
+sp_client_secret    :   
+sp_redirect         :   
+sp_username         :   
+sp_user_id          :   
+sp_playlist_id      :   
+playlist_name       :   
