@@ -1,10 +1,19 @@
+'''
+Author: Chris Isacs
+
+https://github.com/shen3443/groupme-to-spotify
+
+Last Update: 10/1/2020 : Created class for recieving user input, added save functionality for the input
+'''
+
 from groupy.client import Client
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+import json
 
 class GroupmeSpotifyPlaylistUpdate:
     '''
-    Parses through Groupme groupchat messages and finds links to Spotify
+    Parses through Groupme Groupchat messages and finds links to Spotify
     songs, then adds those songs to a Spotify playlist
     '''
     def __init__(self, input_dict):
@@ -180,15 +189,103 @@ class GroupmeSpotifyPlaylistUpdate:
         
         print("Done")
 
+class DataFromUser:
+    def __init__(self, required_inputs):
+        self.required_inputs = required_inputs
+    
+    def get_user_data(self):
+        '''
+        Asks user if they would like to use stored data. Either opens file and returns
+        the data, returns a call of get_inputs() to get new data, or returns itself
+        if the user input is invalid
+        '''
+        #Explain to the user what they are being asked
+        print("If this is not your first time running this program, you may have a save file with all of the required data...")
+        print("If this is your first time, answer 'n' to the following question...")
+        answer = input("Would you like to use stored data on login, group and playlist info? (y/n): ")
 
+        if answer == 'y':
+            #Get the file name
+            data_file = input("Enter the name of the .txt file you would like to use: ")
+            try:
+                #Open the file, load and return the data
+                with open(data_file, 'r') as fp:
+                    return json.loads(fp.read())
+            #If the file doesn't exist, call get_user_data() again for new input
+            except FileNotFoundError:
+                print("File not found...")
+                return self.get_user_data()
 
-def get_inputs(required_inputs):
-    '''
-    Takes a list of required information from user, gets user input for
-    each item in the list, then returns a dict where items from the list
-    are keys and the corresponding user inputs are values
-    '''
-    return {i: input('Enter %s: ' % i) for i in required_inputs}
+        elif answer == 'n':
+            #Get and return new user inputs
+            return self.get_inputs()
+
+        else:
+            #Invalid inputs trigger a recursive call on the function for new input
+            print("Answer not recognized, please answer (y/n)")
+            return self.get_user_data()
+
+    def get_inputs(self):
+        '''
+        Takes a list of required information from user, gets user input for
+        each item in the list, then returns a dict where items from the list
+        are keys and the corresponding user inputs are values
+        '''
+        #Get inputs, store to dict
+        data = {i: input('Enter %s: ' % i) for i in self.required_inputs}
+
+        #Give user option to save the data
+        self.give_save_option(data)
+
+        #Return the data
+        return data
+
+    def give_save_option(self, data):
+        '''
+        Gives the user the option to save the data for future use. Lets user input a filename,
+        then writes the dictionary to that file (using json.dumps()). 
+
+        Returns the files name if a file is written, False if not
+        Recursively returns a call on itself if input is invalid
+        '''
+
+        yn = input("Would you like to save inputs for future use? (y/n): ")
+
+        if yn == 'y':
+            valid = False
+            #While loop repeats until a valid file name is given
+            while not valid:
+                print("WARNING: program will overwrite an existing file if you give a file name already in use in this folder")
+                filename = input("What would you like to name the save file (must end in .txt): ")
+
+                #Check that file name is valid
+                if filename[-4:] == '.txt':
+                    print("Saving to %s..." % (filename))
+
+                    #Write data to file
+                    with open(filename, 'w') as fp:
+                        fp.write(json.dumps(data))
+
+                    #Break out of while loop
+                    print("Done")
+                    valid = True
+
+                else:
+                    #Inform user filename was invalid and cycle back through while loop
+                    print("File name must end in .txt")
+                    print("Trying again...")
+
+            #Return the file name
+            return filename
+
+        elif yn == 'n':
+            #User does not want to save, return False
+            return False
+
+        else:
+            #Input is invalid, return recursive call to let user try again
+            print("Answer not recognized, please answer (y/n)")
+            return self.give_save_option(data)
 
 def main():
     required_inputs = [
@@ -205,7 +302,7 @@ def main():
     ]
     print('***Please see README file for explanation of required inputs & instructions on how to find them***')
     print('https://github.com/shen3443/groupme-to-spotify/blob/master/README.md')
-    GroupmeSpotifyPlaylistUpdate(get_inputs(required_inputs))
+    GroupmeSpotifyPlaylistUpdate(DataFromUser(required_inputs).get_user_data())
 
 if __name__ == "__main__":
     main()
