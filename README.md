@@ -1,11 +1,18 @@
 # groupme-to-spotify
-Python script that parses through messages in a GroupMe group chat, finds links to Spotify tracks, and adds those tracks to a Spotify playlist.
-Built using Groupy and Spotipy
+Python script that parses through messages in a GroupMe group chat, finds links to Spotify tracks, and adds those tracks to a Spotify playlist. It runs in the
+command line and requires user input to log in to the Spotify and Groupme APIs, find the right groupchat and playlist, and name files to store saved data (all data is stored in .txt files).
+
+The script saves the ID of the last message it checks, so that it can be run in the future to add new songs without going over old messages and adding duplicates to the playlist. (It will, however add duplicates if there are multiple messages in the group chat that link to one song).
+
+*Built using Groupy and Spotipy*
 
 # Inputs
 When you run groupme_to_spotify.py you will be prompted to enter some information needed to access Groupme and Spotify, the following is a guide to help you navigate those requests.
 
-It is highly recommended that you use copy+paste to make sure you accurately represent the information. I also recommend using a file like my_inputs.txt to save the inputs you frequently use.
+It is highly recommended that you use copy+paste to make sure you accurately represent the information. I recommend using a file like [my_inputs.txt](https://github.com/shen3443/groupme-to-spotify/blob/master/my_inputs.txt) to organize the data so that you have it ready when you run the program.
+
+If it is your first time running groupme_to_spotify.py, or your first time running it for a particular group/playlist, answer *n* when asked if you would like to use stored data. After entering the information you will be given the opportunity to save it to a text file, which you will be able to use when running the program again in the future.
+
 
 #### gm_token
 Your GroupMe developer token. It can be aquired from https://dev.groupme.com/ 
@@ -46,7 +53,13 @@ The name of your Spotify playlist. Type it directly as it appears in your Spotif
 
 
 # To Do
+## Short Term
 - [ ] Finish README
-- [ ] Create a requirements.txt for pip install
+- [ ] Create download and run instructions
+- [ ] List Requirements
 - [ ] Test with more groups/playlists
-- [ ] Add functionality to log inputs with JSON to a .txt file, so they don't require repeated user input
+- [X] Add functionality to log inputs with JSON to a .txt file, so they don't require repeated user input
+
+## Long Term
+- [ ] GUI 
+- [ ] Adjust save functionality to allow users to save/reuse their tokens/client IDs, while using different group_name, playlist_name, sp_playlist_id and log_file, so that one user can easily re-use the script for multiple groups and playlists.
