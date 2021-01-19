@@ -8,6 +8,7 @@ from groupy.client import Client
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import json
+from alive_progress import alive_bar
 
 
 class GroupmeSpotifyPlaylistUpdate:
@@ -16,6 +17,20 @@ class GroupmeSpotifyPlaylistUpdate:
     songs, then adds those songs to a Spotify playlist
     '''
     def __init__(self, input_dict):
+        '''
+        input dict  :   dictionary built with DataFromUser class with inputs
+                        ['gm_token',
+                        'group_name',
+                        'log_file',
+                        'sp_client_id',
+                        'sp_client_secret',
+                        'sp_redirect',
+                        'sp_username',
+                        'sp_user_id',
+                        'sp_playlist_id',
+                        'playlist_name']
+                        to act as dictionary keys
+        '''
         # Assign paramaters to class attributes
         self.__dict__.update(input_dict)
         self.sp_scope = "playlist-modify-public"
@@ -54,7 +69,7 @@ class GroupmeSpotifyPlaylistUpdate:
         group object. Will raise an exception if the group cannot
         be found
         '''
-        print("Finding %s Group in GroupMe..." % (self.group_name))
+        print(f"\nFinding {self.group_name} Group in GroupMe...")
 
         found = False
 
@@ -96,7 +111,7 @@ class GroupmeSpotifyPlaylistUpdate:
             with open(log_file, 'r') as log:
                 last_checked_message = log.read()
 
-            print("Last checked message ID: ", last_checked_message)
+            print("\nLast checked message ID: ", last_checked_message)
 
         # If the file doesn't exist (ie. first time running the program,
         # or filename miss-entered) exeption will be triggered
@@ -130,7 +145,8 @@ class GroupmeSpotifyPlaylistUpdate:
 
         print("Done")
 
-    def clean_url(self, text):
+    @staticmethod
+    def clean_url(text):
         '''
         Takes a string that may contain a url link and returns the
         link if it exists.
@@ -158,29 +174,39 @@ class GroupmeSpotifyPlaylistUpdate:
 
         # If a last checked message was identified
         if last_checked_message:
-            for message in groupchat.messages.list_after(
-                    last_checked_message).autopage():
-                # Store the ID of the most recently checked message
-                last_message_id = message.id
-                if message.text:
-                    if 'https://open.spotify.com/track/' in message.text:
-                        # Isolate the spotify link
-                        track_url = self.clean_url(message.text)
-                        song_urls.append(track_url)
+            messages = list(groupchat.messages.list_after(
+                    last_checked_message).autopage())
+            with alive_bar(
+                    len(messages), title='Scanning messages...\n'
+                    ) as bar:
+                for message in messages:
+                    # Store the ID of the most recently checked message
+                    last_message_id = message.id
+                    if message.text:
+                        if 'https://open.spotify.com/track/' in message.text:
+                            # Isolate the spotify link
+                            track_url = self.clean_url(message.text)
+                            song_urls.append(track_url)
+                    bar()
 
         # If no last checked message was identified
         else:
-            for message in groupchat.messages.list_all().autopage():
-                # Store the ID of the most recently checked message
-                last_message_id = message.id
-                if message.text:
-                    if 'https://open.spotify.com/track/' in message.text:
-                        # Isolate the Spotify link
-                        track_url = self.clean_url(message.text)
-                        song_urls.append(track_url)
+            messages = list(groupchat.messages.list_all().autopage())
+            with alive_bar(
+                    len(messages), title='Scanning messages...\n'
+                    ) as bar:
+                for message in messages:
+                    # Store the ID of the most recently checked message
+                    last_message_id = message.id
+                    if message.text:
+                        if 'https://open.spotify.com/track/' in message.text:
+                            # Isolate the Spotify link
+                            track_url = self.clean_url(message.text)
+                            song_urls.append(track_url)
+                    bar()
 
-        print("Found %d new songs to add to %s" % (
-            len(song_urls), self.playlist_name)
+        print(
+            f'Found {len(song_urls)} new songs to add to {self.playlist_name}'
             )
 
         # Update the log file with the ID of the most recent message in the
@@ -194,21 +220,23 @@ class GroupmeSpotifyPlaylistUpdate:
         Takes a list of spotify song URLs and adds them to a
         spotify playlist
         '''
-        print("Adding %d new songs to %s..." % (
-            len(song_urls), self.group_name)
-            )
+        lsu = len(song_urls)
+        with alive_bar(
+                lsu,
+                title=(f'Adding {lsu} new songs to {self.playlist_name}...\n')
+                ) as bar:
+            # Spotify API only accepts 100 songs at a time
+            while song_urls:
+                temp = song_urls[0:100]
+                song_urls = song_urls[100:]
+                self.sp.user_playlist_add_tracks(
+                    self.sp_user_id,
+                    self.sp_playlist_id,
+                    temp
+                    )
+                bar(incr=len(temp))
 
-        # Spotify API only accepts 100 songs at a time
-        while song_urls:
-            temp = song_urls[0:100]
-            song_urls = song_urls[100:]
-            self.sp.user_playlist_add_tracks(
-                self.sp_user_id,
-                self.sp_playlist_id,
-                temp
-                )
-
-        print("Done")
+        print("Done\n")
 
 
 class DataFromUser:
@@ -345,12 +373,13 @@ def main():
         'playlist_name'
     ]
     print(
-        '***Please see README file for explanation of required inputs'
-        ' & instructions on how to find them***'
+        '\n***Please see README file for explanation of required inputs'
+        ' & instructions on how to find them***\n'
         )
     print(
         'https://github.com/shen3443/groupme-to-spotify/blob/master/README.md'
         )
+    print()
     GroupmeSpotifyPlaylistUpdate(DataFromUser(required_inputs).get_user_data())
 
 
